@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Realigning the Stars — Moonwish</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,500;1,600&family=Crimson+Pro:wght@400;500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Background -->
+<canvas id="stars" class="layer"></canvas>
+<div class="layer milkyway"></div>
+<div class="planet"></div>
+
+<!-- Banner slot: drop your character art (or the galaxy-dress canvas) in here -->
+<div class="hero-art" aria-hidden="true">
+  <div class="hero-frame">
+    <svg class="orbits" viewBox="0 0 400 400" fill="none">
+      <circle cx="200" cy="200" r="190" stroke="rgba(255,210,245,.55)" stroke-width="1.2" stroke-dasharray="1 7" stroke-linecap="round"/>
+      <circle cx="200" cy="200" r="140" stroke="rgba(255,210,245,.45)" stroke-width="1" stroke-dasharray="1 6" stroke-linecap="round"/>
+      <circle cx="200" cy="200" r="90"  stroke="rgba(255,210,245,.35)" stroke-width="1"/>
+    </svg>
+    <img src="madoka.png" alt="">   <!-- wing lines removed; original is header.png -->
+    <canvas id="galaxy"></canvas>
+  </div>
+</div>
+
+<header>
+  <svg class="logo-star" viewBox="0 0 100 100"><use href="#sparkle"/></svg>
+  <div>
+    <div class="brand-name">Moonwish</div>
+    <div class="brand-sub">where every wish finds its star</div>
+  </div>
+  <div class="header-line"><svg class="spark" viewBox="0 0 100 100"><use href="#sparkle"/></svg></div>
+</header>
+
+<main>
+  <div class="badge">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <!-- screwdriver: tip top-left, handle bottom-right -->
+      <g transform="rotate(-45 12 12)">
+        <path d="M12 1.8v10"/>
+        <path d="M11 11.8h2"/>
+        <rect x="10" y="13.2" width="4" height="8.6" rx="1.6"/>
+      </g>
+      <!-- hammer: head top-right, handle bottom-left -->
+      <g transform="rotate(45 12 12)">
+        <rect x="11" y="7.6" width="2" height="14.2" rx="1" fill="#2a1240"/>
+        <path d="M7 3.2h7.6l2.4 1.4v1.8l-2.4 1.2H7Z" fill="#2a1240"/>
+      </g>
+    </svg>
+    SITE MAINTENANCE
+  </div>
+
+  <div class="title-wrap">
+    <svg class="title-orbit" viewBox="0 0 700 140" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="orbitGrad" x1="0" x2="1">
+          <stop offset="0" stop-color="#ff9fe0" stop-opacity="0"/>
+          <stop offset=".55" stop-color="#ff9fe0" stop-opacity=".35"/>
+          <stop offset="1" stop-color="#ffb5ea" stop-opacity=".95"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="350" cy="72" rx="340" ry="52" fill="none" stroke="url(#orbitGrad)" stroke-width="2" transform="rotate(-6 350 72)"/>
+    </svg>
+    <svg style="position:absolute; right:3%; top:-14%; width:34px; height:34px; z-index:2" viewBox="0 0 100 100" aria-hidden="true"><use href="#sparkle"/></svg>
+    <h1>Realigning the Stars</h1>
+  </div>
+
+  <p class="lede">Our site is getting a refresh with new cosmic enhancements.<br />We'll return soon, brighter than before.</p>
+
+  <!-- Overall progress -->
+  <section class="card" aria-labelledby="progress-label">
+    <div class="card-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <!-- rocket, tilted to point up-right -->
+        <g transform="rotate(45 12 12) translate(12 12) scale(.92) translate(-12 -12)">
+          <path d="M12 2.2c2.7 2.1 4 5.2 4 8.8v5.6H8V11c0-3.6 1.3-6.7 4-8.8Z"/>
+          <circle cx="12" cy="9.2" r="1.7"/>
+          <path d="M8 12.6 5.4 15.2v3.4L8 16.6M16 12.6l2.6 2.6v3.4L16 16.6"/>
+          <path d="M10.2 19.4 12 22.4l1.8-3"/>
+        </g>
+      </svg>
+      <span id="progress-label">Overall progress</span>
+      <span class="pct" id="pct">0%</span>
+    </div>
+    <div class="bar" role="progressbar" aria-labelledby="progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="bar-fill" id="barFill"></div>
+    </div>
+    <div class="steps" id="steps"></div>
+  </section>
+
+  <!-- Project status -->
+  <section class="card" aria-labelledby="status-label">
+    <div class="card-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/>
+      </svg>
+      <span id="status-label">Project status</span>
+    </div>
+    <div class="status-grid">
+      <div class="status-col" id="statusLeft"></div>
+      <div class="divider"></div>
+      <div class="status-col" id="statusRight"></div>
+    </div>
+  </section>
+
+  <!-- Notify form -->
+  <form class="notify" id="notifyForm" novalidate>
+    <label class="field">
+      <svg viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round">
+        <rect x="3" y="7" width="26" height="18" rx="2"/><path d="M3 9l13 9 13-9M3 25l10-8M29 25l-10-8"/>
+      </svg>
+      <span class="visually-hidden">Email address</span>
+      <input type="email" name="email" placeholder="Enter your email address..." autocomplete="email" required>
+    </label>
+    <button class="btn" type="submit">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4l2-2ZM10 20a2 2 0 0 0 4 0M12 3v2"/>
+      </svg>
+      Notify Me
+    </button>
+  </form>
+  <div class="form-msg" id="formMsg" aria-live="polite"></div>
+
+  <!-- Socials: edit the hrefs -->
+  <nav class="socials" aria-label="Social links">
+    <svg class="flourish" viewBox="0 0 120 20" aria-hidden="true"><path d="M0 10H88" stroke="rgba(255,220,250,.7)"/><use href="#sparkle" x="86" y="1" width="18" height="18"/><use href="#sparkle" x="106" y="4" width="12" height="12"/></svg>
+    <a class="social" href="#" aria-label="Bluesky" data-icon="bluesky"></a>
+    <a class="social" href="#" aria-label="Instagram" data-icon="instagram"></a>
+    <a class="social" href="#" aria-label="GitHub" data-icon="github"></a>
+    <a class="social" href="#" aria-label="CodePen" data-icon="tabler:brand-codepen"></a>
+    <svg class="flourish" viewBox="0 0 120 20" aria-hidden="true" style="transform:scaleX(-1)"><path d="M0 10H88" stroke="rgba(255,220,250,.7)"/><use href="#sparkle" x="86" y="1" width="18" height="18"/><use href="#sparkle" x="106" y="4" width="12" height="12"/></svg>
+  </nav>
+</main>
+
+<!-- Shared SVG symbols -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <radialGradient id="sparkGlow"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d6ecff"/></radialGradient>
+    <symbol id="sparkle" viewBox="0 0 100 100">
+      <path d="M50 0 C53 38 62 47 100 50 C62 53 53 62 50 100 C47 62 38 53 0 50 C38 47 47 38 50 0Z" fill="url(#sparkGlow)"/>
+    </symbol>
+    <symbol id="check" viewBox="0 0 16 16">
+      <path d="M3.5 8.5l3 3 6-7" fill="none" stroke="#3a1856" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<script src="script.js"></script>
+</body>
+</html>
