@@ -215,20 +215,40 @@ document.querySelectorAll(".social").forEach(a => {
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   let stars = [], w, h, dpr;
 
+  // Keep stars out from behind text and cards so the content stays easy to read
+  const CLEAR = ".brand-name, .brand-sub, .badge, .title-wrap h1, .lede, .card, .notify-label, form.notify, .socials";
+  const PAD = 12;   // extra clear space around each element, in px
+  function clearZones() {
+    if (innerWidth <= 960) {
+      // stacked phone layout scrolls over a fixed sky, so only keep the big sparkles off the content column
+      const m = document.querySelector("main").getBoundingClientRect();
+      return { all: [], big: [{ l: m.left, t: 0, r: m.right, b: innerHeight }] };
+    }
+    const zones = [...document.querySelectorAll(CLEAR)].map(el => {
+      const r = el.getBoundingClientRect();
+      return { l: r.left - PAD, t: r.top - PAD, r: r.right + PAD, b: r.bottom + PAD };
+    });
+    return { all: zones, big: zones };
+  }
+  const inside = (x, y, zones) => zones.some(z => x >= z.l && x <= z.r && y >= z.t && y <= z.b);
+
   function resize() {
     dpr = Math.min(devicePixelRatio || 1, 2);
     w = canvas.width = innerWidth * dpr; h = canvas.height = innerHeight * dpr;
     canvas.style.width = innerWidth + "px"; canvas.style.height = innerHeight + "px";
     const count = Math.round((innerWidth * innerHeight) / 2200);
+    const zones = clearZones();
     stars = Array.from({ length: count }, () => {
       const big = Math.random() < 0.035;
+      const x = Math.random() * innerWidth, y = Math.random() * innerHeight;
+      if (inside(x, y, big ? zones.big : zones.all)) return null;   // would sit behind content: skip it
       return {
-        x: Math.random() * w, y: Math.random() * h,
+        x: x * dpr, y: y * dpr,
         r: (big ? 1.6 + Math.random() * 1.6 : 0.3 + Math.random() * 1.1) * dpr,
         big, phase: Math.random() * Math.PI * 2, speed: 0.6 + Math.random() * 2,
         tint: Math.random() < 0.35 ? "255,190,240" : "255,255,255",
       };
-    });
+    }).filter(Boolean);
   }
 
   function sparkle(x, y, s, a) {           // 4-point star with glow
@@ -253,5 +273,8 @@ document.querySelectorAll(".social").forEach(a => {
     if (!reduce) requestAnimationFrame(draw);
   }
   addEventListener("resize", resize);
+  // re-place the stars once fonts load or the content changes size, so the clear areas stay accurate
+  if (window.ResizeObserver) new ResizeObserver(() => resize()).observe(document.querySelector("main"));
+  if (document.fonts) document.fonts.ready.then(resize);
   resize(); requestAnimationFrame(draw);
 })();

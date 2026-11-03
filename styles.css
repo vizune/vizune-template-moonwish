@@ -93,7 +93,7 @@ body::before {
 
 /* ---------- Header ---------- */
 header {
-  position: absolute; top: 0; left: 0; z-index: 5;   /* taken out of the flow so <main> can start at the top */
+  position: fixed; top: 0; left: 0; z-index: 5;   /* taken out of the flow so <main> can start at the top */
   display: flex; align-items: center; gap: 18px;
   padding: 22px 0 0 4.5vw;
 }
@@ -122,6 +122,7 @@ main {
   background: rgba(60, 25, 90, 0.4);
   box-shadow: var(--glow);
   font-size: 14px; letter-spacing: 4px; color: var(--cream);
+  margin-bottom: 14px;
 }
 .badge svg { width: 20px; height: 20px; }
 
@@ -149,7 +150,7 @@ h1 {
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   box-shadow: var(--glow), inset 0 0 30px rgba(255, 150, 230, 0.08);
   padding: 18px 30px 20px;
-  margin-bottom: clamp(14px, 2.6vh, 24px);   /* spacing grows with taller screens */
+  margin-bottom: clamp(20px, 2.6vh, 24px);   /* spacing grows with taller screens */
 }
 .card-head { display: flex; align-items: center; gap: 14px; font-size: 14px; letter-spacing: 3.5px; color: var(--cream); }
 #progress-label, #status-label { text-transform: uppercase; }
@@ -223,29 +224,36 @@ h1 {
   border-top: 1px solid rgba(255, 200, 240, 0.18);
 }
 .divider { background: rgba(255, 210, 245, 0.35); margin: 6px 0; }
-.status-col { display: flex; flex-direction: column; gap: 18px; padding-left: 26px; }
-.status-item { display: flex; align-items: center; gap: 18px; }
-.status-item .dot { width: 30px; height: 30px; flex: none; }
-.status-item .dot svg { width: 16px; height: 16px; }
-.status-item h3 { font-weight: 400; font-size: 19px; line-height: 1.15; }
-.status-item p { font-family: var(--serif); font-size: 17.5px; line-height: 1.3; color: rgba(246, 238, 252, 0.86); margin-top: 2px; }
+.status-col { display: flex; flex-direction: column; gap: 22px; padding: 6px 0 6px 26px; }
+.status-item { display: flex; align-items: center; gap: 20px; }
+.status-item .dot { width: 34px; height: 34px; flex: none; }
+.status-item .dot svg { width: 18px; height: 18px; }
+.status-item h3 { font-weight: 400; font-size: 22px; line-height: 1.15; }
+.status-item p { font-family: var(--serif); font-size: 18px; line-height: 1.35; color: rgba(246, 238, 252, 0.86); margin-top: 4px; }
 
 /* Notify form */
-form.notify { display: flex; gap: 16px; width: 100%; margin-top: clamp(6px, 1.5vh, 14px); }
+/* small label above the form, matching the card labels */
+.notify-label {
+  align-self: flex-start; margin: clamp(6px, 1.5vh, 14px) 0 0 26px;
+  font-size: 14px; letter-spacing: 3.5px; text-transform: uppercase; color: var(--cream);
+}
+form.notify { display: flex; gap: 16px; width: 100%; margin-top: 10px; }
 .field {
   flex: 1; display: flex; align-items: center; gap: 16px;
   padding: 0 26px; height: 62px;
-  border: 1.5px solid var(--card-border); border-radius: 999px;
-  background: rgba(50, 20, 80, 0.5);
-  box-shadow: var(--glow);
+  border: 1.5px solid rgba(245, 170, 230, 0.32); border-radius: 999px;
+  /* recessed: darker fill, shadow along the top edge, faint light catching the bottom lip */
+  background: rgba(16, 7, 34, 0.72);
+  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.55), inset 0 -1px 0 rgba(255, 200, 240, 0.10);
+  transition: border-color .2s, box-shadow .2s;
 }
 .field svg { width: 30px; height: 30px; flex: none; }
 .field input {
   flex: 1; min-width: 0; background: none; border: 0; outline: none;
   color: var(--text); font-family: var(--serif); font-size: 21px;
 }
-.field input::placeholder { color: var(--cream); opacity: .72; }   /* soft cream, dimmer than real text */
-.field:focus-within { border-color: #ffc7ef; box-shadow: 0 0 22px rgba(255, 150, 230, 0.6); }
+.field input::placeholder { color: var(--cream); opacity: .8; }   /* soft cream, dimmer than real text */
+.field:focus-within { border-color: #ffc7ef; box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.55), 0 0 18px rgba(255, 150, 230, 0.5); }
 .btn {
   display: inline-flex; align-items: center; gap: 12px;
   height: 62px; padding: 0 32px; white-space: nowrap; flex: none;
@@ -313,6 +321,7 @@ form.notify { display: flex; gap: 16px; width: 100%; margin-top: clamp(6px, 1.5v
 
 /* ---------- Responsive: stack on narrow screens ---------- */
 @media (max-width: 960px) {
+  .notify-label { align-self: center; margin-left: 0; }
   h1 { white-space: normal; text-align: center; }
   header { position: relative; }
   main { width: auto; margin: 0 auto; padding: 4vh 20px 26vh; }
@@ -329,13 +338,14 @@ form.notify { display: flex; gap: 16px; width: 100%; margin-top: clamp(6px, 1.5v
   .btn { justify-content: center; }
 }
 /* Shorter desktop screens: keep the bigger status text, tighten the gaps so it all fits */
-@media (min-width: 961px) and (max-height: 940px) {
+@media (min-width: 961px) and (max-height: 1020px) {
   .title-wrap { margin: 6px 0 4px; }
-  .lede { margin-bottom: 18px; }
-  .card { margin-bottom: 14px; padding-top: 14px; padding-bottom: 16px; }
-  .status-col { gap: 12px; }
+  .lede { margin-bottom: 20px; }
+  .card { margin-bottom: 20px; padding-top: 14px; padding-bottom: 14px; }
+  .status-col { gap: 14px; padding-top: 2px; padding-bottom: 2px; }
   .status-grid { margin-top: 10px; }
-  form.notify { margin-top: 4px; }
+  .notify-label { margin-top: 2px; }
+  form.notify { margin-top: 8px; }
   .socials { margin-top: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
