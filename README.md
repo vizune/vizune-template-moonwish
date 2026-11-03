@@ -47,14 +47,22 @@ At the top of `script.js`:
 ```js
 const PROGRESS = 76;
 const STEPS = [
-  { name: "Design",  desc: "UI/UX and visual assets are ready",  done: true  },
-  { name: "Coding",  desc: "Website development is in progress", done: true  },
-  { name: "Content", desc: "Adding and polishing site content",  done: true  },
-  { name: "Launch",  desc: "Final testing and going live soon",  done: false },
+  { name: "Design",  desc: "UI/UX and visual assets are ready",  status: "done"        },
+  { name: "Coding",  desc: "Building and refining the website",  status: "in-progress" },
+  { name: "Content", desc: "Adding and polishing site content",  status: "in-progress" },
+  { name: "Launch",  desc: "Final testing and going live soon",  status: "todo"        },
 ];
 ```
 
-The progress bar, the step dots and the Project Status list all update from this. The first unfinished step automatically gets the pulsing ice-blue "next" ring.
+Each step's `status` sets its dot, in both the progress steps and the Project Status list:
+
+| Status | Dot |
+|---|---|
+| `"done"` | Filled pink with a tick |
+| `"in-progress"` | Pulsing ice-blue ring with a small filled centre |
+| `"todo"` | Plain empty ring |
+
+Screen readers announce each state as "Done", "In progress" or "Not started". `PROGRESS` sets the bar separately, so you can show partial progress on in-progress steps.
 
 ### Colours
 

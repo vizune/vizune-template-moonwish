@@ -4,21 +4,24 @@
    CONFIG — edit these to update the page
    ========================================================= */
 const PROGRESS = 76;
+// status: "done" | "in-progress" | "todo"
 const STEPS = [
-  { name: "Design",  desc: "UI/UX and visual assets are ready",   done: true  },
-  { name: "Coding",  desc: "Website development is in progress",  done: true  },
-  { name: "Content", desc: "Adding and polishing site content",   done: true  },
-  { name: "Launch",  desc: "Final testing and going live soon",   done: false },
+  { name: "Design",  desc: "UI/UX and visual assets are ready",  status: "done"        },
+  { name: "Coding",  desc: "Building and refining the website",  status: "in-progress" },
+  { name: "Content", desc: "Adding and polishing site content",  status: "in-progress" },
+  { name: "Launch",  desc: "Final testing and going live soon",  status: "todo"        },
 ];
 
 /* ---------- Progress + steps ---------- */
-const NEXT = STEPS.findIndex(s => !s.done);   // first unfinished step gets the icy "next" ring
-const dot = (done, next) => `<div class="dot ${done ? "done" : next ? "next" : ""}"><svg viewBox="0 0 16 16"><use href="#check"/></svg></div>`;
+// Screen-reader text for each state (the dots themselves are purely visual)
+const STATUS_LABEL = { "done": "Done", "in-progress": "In progress", "todo": "Not started" };
+const dot = status => `<div class="dot ${status}"><svg viewBox="0 0 16 16" aria-hidden="true"><use href="#check"/></svg>` +
+                      `<span class="visually-hidden">${STATUS_LABEL[status] || ""}</span></div>`;
 document.getElementById("steps").innerHTML =
-  STEPS.map((s, i) => `<div class="step">${dot(s.done, i === NEXT)}${s.name}</div>`).join("");
+  STEPS.map(s => `<div class="step">${dot(s.status)}${s.name}</div>`).join("");
 
 const half = Math.ceil(STEPS.length / 2);
-const statusHTML = s => `<div class="status-item">${dot(s.done, STEPS.indexOf(s) === NEXT)}<div><h3>${s.name}</h3><p>${s.desc}</p></div></div>`;
+const statusHTML = s => `<div class="status-item">${dot(s.status)}<div><h3>${s.name}</h3><p>${s.desc}</p></div></div>`;
 document.getElementById("statusLeft").innerHTML  = STEPS.slice(0, half).map(statusHTML).join("");
 document.getElementById("statusRight").innerHTML = STEPS.slice(half).map(statusHTML).join("");
 
