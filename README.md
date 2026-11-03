@@ -96,20 +96,31 @@ The banner sits in the bottom-left corner. To use your own:
 
 The galaxy only shows where `galaxy-mask.png` is solid. If you change the banner, make a new mask the **same size as your banner image**: solid white where the galaxy should appear, transparent everywhere else. Any image editor with layers works.
 
-The galaxy's look is set in the `GALAXY` block in `script.js`:
+The look is set in the `GALAXY` block in `script.js`. Choose a style with `style`:
+
+- `"starfield"` (default): an even field of tiny twinkling stars on a dark navy backing, swirling around the centre point
+- `"spiral"`: a spiral galaxy with glowing arms
+
+Shared settings:
 
 | Setting | What it does |
 |---|---|
-| `count` | Number of stars |
-| `branches` | Number of spiral arms |
-| `spin` | How tightly the arms curl |
-| `randomness`, `randomnessPower` | How far stars stray from the arms |
-| `size` | Star size |
-| `innerColor`, `outerColor` | Colour at the core and at the edges |
-| `speed` | Rotation speed |
 | `centerX`, `centerY` | Centre point, as fractions of the banner (0 to 1) |
+| `roll` | Tilt of the disc on screen, in degrees |
+| `speed` | Rotation speed |
+| `twinkle` | 0 = steady stars, 1 = strong twinkle |
+
+Each style then has its own block:
+
+| Setting | What it does |
+|---|---|
+| `count`, `size` | Number and size of stars |
 | `radius` | Size, as a fraction of the banner width |
-| `viewAngle`, `roll` | Tilt of the disc (0 = from above, 90 = edge-on) |
+| `viewAngle` | Tilt of the disc (0 = from above, 90 = edge-on) |
+| `swirl` | How much faster the inner stars turn (0 = all together) |
+| `innerColor`, `outerColor` | Starfield: stars are a random mix of the two. Spiral: core and edge colours |
+| `backing` | Starfield only: colour behind the stars (`null` lets the art show through) |
+| `branches`, `spin`, `randomness`, `randomnessPower` | Spiral only: number of arms, curl, and how far stars stray |
 
 ### Social links
 
@@ -133,6 +144,6 @@ The form checks the email address and shows a thank-you message, but doesn't sen
 
 ## Credits
 
-- Galaxy look inspired by [Chema Alfonso's galaxy pen](https://codepen.io/ChemaAlfonso/pen/VwzrwGx)
+- Star rendering and swirl inspired by [Chema Alfonso's galaxy pen](https://codepen.io/ChemaAlfonso/pen/VwzrwGx)
 - Icons: [Simple Icons](https://simpleicons.org) (CC0), [Tabler Icons](https://tabler.io/icons) (MIT), [Font Awesome Free](https://fontawesome.com) (CC BY 4.0)
 - Fonts: [Google Fonts](https://fonts.google.com)

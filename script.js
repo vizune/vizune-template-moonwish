@@ -78,20 +78,39 @@ document.querySelectorAll(".social").forEach(a => {
    Drawn with WebGL into a hidden canvas, then clipped to galaxy-mask.png. */
 (function galaxy() {
   const GALAXY = {
-    count: 90000,          // number of stars
-    branches: 4,           // spiral arms
-    spin: 2.8,             // how much the arms curl (higher = more spirally)
-    randomness: 0.5,       // how far stars stray from the arms
-    randomnessPower: 3.2,  // higher = tighter arms with a few strays
-    size: 10,              // star size
-    innerColor: "#9fd4ff",     // ice blue core (was purple #a340b7)
-    outerColor: "#5f6fd6",     // deeper periwinkle at the edges
-    speed: 0.05,           // rotation speed
+    style: "starfield",    // "starfield" = even swirl of stars, "spiral" = galaxy with arms
     centerX: 0.17, centerY: 0.86,  // centre, as fractions of the banner (under her feet)
-    radius: 0.6,           // radius as a fraction of the banner width
-    viewAngle: 58,         // 0 = seen from above, 90 = edge-on
     roll: -7,              // tilt of the disc on screen (degrees)
+    speed: 0.025,          // rotation speed (lower = slower)
+    twinkle: 0.55,         // 0 = steady stars, 1 = strong twinkle
+
+    starfield: {
+      count: 110000,       // number of stars
+      size: 8,             // star size
+      backing: "#130c2c",  // dark navy behind the stars, so fabric and gaps match (null = see-through)
+      radius: 1.1,         // radius as a fraction of the banner width (big enough to fill the mask)
+      viewAngle: 40,       // 0 = seen from above, 90 = edge-on
+      swirl: 0.6,          // how much faster the inner stars turn (0 = all turn together)
+      innerColor: "#ffffff",   // stars are a random mix of these two
+      outerColor: "#9fd4ff",
+    },
+    spiral: {
+      count: 90000,
+      branches: 4,         // spiral arms
+      spin: 2.8,           // how much the arms curl
+      randomness: 0.5,     // how far stars stray from the arms
+      randomnessPower: 3.2,// higher = tighter arms with a few strays
+      size: 10,
+      radius: 0.6,
+      viewAngle: 58,
+      swirl: 0,
+      innerColor: "#9fd4ff",   // core colour
+      outerColor: "#5f6fd6",   // edge colour
+    },
   };
+  const C = { ...GALAXY, ...GALAXY[GALAXY.style] };   // the active settings
+  // with a solid backing, draw normally; otherwise "screen" the stars onto the art
+  if (C.backing) document.getElementById("galaxy").style.mixBlendMode = "normal";
 
   const out = document.getElementById("galaxy"), ctx = out.getContext("2d");
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -103,22 +122,30 @@ document.querySelectorAll(".social").forEach(a => {
 
   // --- build the stars ---
   const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
-  const inner = hex(GALAXY.innerColor), outer = hex(GALAXY.outerColor);
-  const N = GALAXY.count, data = new Float32Array(N * 8);   // r, angle, offX, offY, offZ, scale, colourMix, spare
-  const stray = r => Math.pow(Math.random(), GALAXY.randomnessPower) * (Math.random() < .5 ? -1 : 1) * GALAXY.randomness * r;
+  const inner = hex(C.innerColor), outer = hex(C.outerColor);
+  const N = C.count, data = new Float32Array(N * 8);   // r, angle, offX, offY, offZ, scale, colourMix, twinklePhase
+  const stray = r => Math.pow(Math.random(), C.randomnessPower) * (Math.random() < .5 ? -1 : 1) * C.randomness * r;
+  const TAU = Math.PI * 2;
   for (let i = 0; i < N; i++) {
-    const r = Math.random();
-    const angle = (i % GALAXY.branches) / GALAXY.branches * Math.PI * 2 + r * GALAXY.spin * Math.PI;
-    data.set([r, angle, stray(r), stray(r) * .35, stray(r), Math.random(), r, 0], i * 8);
+    if (C.style === "spiral") {
+      const r = Math.random();
+      const angle = (i % C.branches) / C.branches * TAU + r * C.spin * Math.PI;
+      data.set([r, angle, stray(r), stray(r) * .35, stray(r), Math.random(), r, Math.random() * TAU], i * 8);
+    } else {
+      // even spread over the disc, mostly tiny stars with the odd bright one
+      const r = Math.sqrt(Math.random());
+      const scale = .3 + .7 * Math.pow(Math.random(), 5);
+      data.set([r, Math.random() * TAU, 0, (Math.random() - .5) * .04, 0, scale, Math.random(), Math.random() * TAU], i * 8);
+    }
   }
 
   const vs = `
-    attribute vec2 aPolar; attribute vec3 aOffset; attribute float aScale; attribute float aMix;
-    uniform float uTime, uSize, uCos, uSin, uRollC, uRollS, uRadius;
+    attribute vec2 aPolar; attribute vec3 aOffset; attribute float aScale; attribute float aMix; attribute float aPhase;
+    uniform float uTime, uClock, uSwirl, uTwinkle, uSize, uCos, uSin, uRollC, uRollS, uRadius;
     uniform vec2 uCenter; uniform vec3 uInner, uOuter;
     varying vec3 vColor;
     void main() {
-      float a = aPolar.y + uTime;
+      float a = aPolar.y + uTime * (1.0 + uSwirl / (aPolar.x + 0.35));   // inner stars turn faster
       vec3 p = vec3(cos(a) * aPolar.x, 0.0, sin(a) * aPolar.x) + aOffset;   // disc in the x-z plane
       // tip the disc towards the viewer
       vec3 t = vec3(p.x, p.y * uCos - p.z * uSin, p.y * uSin + p.z * uCos);
@@ -127,7 +154,8 @@ document.querySelectorAll(".social").forEach(a => {
       s = vec2(s.x * uRollC - s.y * uRollS, s.x * uRollS + s.y * uRollC);
       gl_Position = vec4(uCenter + s, 0.0, 1.0);
       gl_PointSize = uSize * aScale * persp;
-      vColor = mix(uInner, uOuter, aMix);
+      float tw = 1.0 - uTwinkle * 0.5 * (1.0 + sin(uClock * (1.2 + aPhase * 0.5) + aPhase * 7.0));
+      vColor = mix(uInner, uOuter, aMix) * tw;
     }`;
   const fs = `
     precision mediump float; varying vec3 vColor;
@@ -141,15 +169,16 @@ document.querySelectorAll(".social").forEach(a => {
   gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs));
   gl.linkProgram(prog); gl.useProgram(prog);
   const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-  [["aPolar", 2, 0], ["aOffset", 3, 2], ["aScale", 1, 5], ["aMix", 1, 6]].forEach(([n, k, off]) => {
+  [["aPolar", 2, 0], ["aOffset", 3, 2], ["aScale", 1, 5], ["aMix", 1, 6], ["aPhase", 1, 7]].forEach(([n, k, off]) => {
     const l = gl.getAttribLocation(prog, n); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, k, gl.FLOAT, false, 32, off * 4);
   });
   const U = n => gl.getUniformLocation(prog, n);
-  const va = GALAXY.viewAngle * Math.PI / 180, ro = GALAXY.roll * Math.PI / 180;
+  const va = C.viewAngle * Math.PI / 180, ro = C.roll * Math.PI / 180;
   gl.uniform1f(U("uCos"), Math.cos(va)); gl.uniform1f(U("uSin"), Math.sin(va));
   gl.uniform1f(U("uRollC"), Math.cos(ro)); gl.uniform1f(U("uRollS"), Math.sin(ro));
-  gl.uniform1f(U("uRadius"), GALAXY.radius);
-  gl.uniform2f(U("uCenter"), GALAXY.centerX * 2 - 1, 1 - GALAXY.centerY * 2);
+  gl.uniform1f(U("uRadius"), C.radius);
+  gl.uniform1f(U("uSwirl"), C.swirl || 0); gl.uniform1f(U("uTwinkle"), C.twinkle);
+  gl.uniform2f(U("uCenter"), C.centerX * 2 - 1, 1 - C.centerY * 2);
   gl.uniform3fv(U("uInner"), inner); gl.uniform3fv(U("uOuter"), outer);
   gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);                   // additive: dense areas glow
 
@@ -159,15 +188,17 @@ document.querySelectorAll(".social").forEach(a => {
     out.width = glc.width = Math.round(out.offsetWidth * q);
     out.height = glc.height = Math.round(out.offsetHeight * q);
     gl.viewport(0, 0, glc.width, glc.height);
-    gl.uniform1f(U("uSize"), GALAXY.size * glc.width / 1000);
+    gl.uniform1f(U("uSize"), C.size * glc.width / 1000);
   }
   function draw(t) {
-    gl.uniform1f(U("uTime"), reduce ? 0 : t / 1000 * GALAXY.speed);
+    gl.uniform1f(U("uTime"), reduce ? 0 : t / 1000 * C.speed);
+    gl.uniform1f(U("uClock"), reduce ? 0 : t / 1000);
     gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawArrays(gl.POINTS, 0, N);
     const w = out.width, h = out.height;
     ctx.clearRect(0, 0, w, h);
     if (mask.complete && mask.naturalWidth) {
+      if (C.backing) { ctx.fillStyle = C.backing; ctx.fillRect(0, 0, w, h); }
       ctx.drawImage(glc, 0, 0, w, h);
       ctx.globalCompositeOperation = "destination-in";      // keep only the starry fabric + gaps
       ctx.drawImage(mask, 0, 0, w, h);
